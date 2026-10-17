@@ -1,0 +1,638 @@
+/* ============================================================
+   Chayolei Beis Dovid — Academic Theme
+   SvelteKit 2 + Tailwind CSS v4
+   ============================================================ */
+
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@300;400;500;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Serif+Hebrew:wght@400;500;700&display=swap');
+
+@import "tailwindcss";
+
+/* ============================================================
+   Theme Tokens
+   ============================================================ */
+
+@theme {
+  /* --- Backgrounds --- */
+  --color-bg-primary: #FAF7F2;
+  --color-bg-secondary: #F3EDE4;
+  --color-bg-tertiary: #EBE3D7;
+  --color-bg-sidebar: #2C2418;
+  --color-bg-topbar: #FFFFFF;
+  --color-bg-hover: #F0E8DA;
+  --color-bg-active: #E8DECE;
+  --color-bg-selected: #E6DDD0;
+  --color-bg-code: #F5F0E8;
+
+  /* --- Text --- */
+  --color-text-primary: #1A1611;
+  --color-text-secondary: #3A3125;
+  --color-text-tertiary: #5C5347;
+  --color-text-inverse: #FAF7F2;
+  --color-text-inverse-secondary: #D4C9BC;
+  --color-text-link: #1B4F72;
+  --color-text-link-hover: #154360;
+
+  /* --- Borders --- */
+  --color-border-primary: #D4CAB8;
+  --color-border-secondary: #E2D9CC;
+  --color-border-strong: #B8AD9E;
+  --color-border-sidebar: #3D3326;
+
+  /* --- Accent: Primary (Institutional Blue) --- */
+  --color-accent-primary: #1B4F72;
+  --color-accent-primary-hover: #154360;
+  --color-accent-primary-light: #D4E6F1;
+
+  /* --- Accent: Secondary (Sefer Burgundy — red ink in printed seforim) --- */
+  --color-accent-secondary: #7A1F2B;
+  --color-accent-secondary-hover: #5E1521;
+  --color-accent-secondary-light: #F5E8EA;
+
+  /* --- Status --- */
+  --color-status-success: #1E6F50;
+  --color-status-success-light: #D5F0E3;
+  --color-status-warning: #A67B2C;
+  --color-status-warning-light: #FDF3DD;
+  --color-status-error: #922B21;
+  --color-status-error-light: #FADBD8;
+  --color-status-info: #1B4F72;
+  --color-status-info-light: #D4E6F1;
+  --color-status-draft: #8A7F72;
+  --color-status-draft-light: #EDEAE5;
+
+  /* --- Tiers --- */
+  --color-tier-enlisted: #5D6D3F;
+  --color-tier-enlisted-light: #E8EDD9;
+  --color-tier-nco: #1B4F72;
+  --color-tier-nco-light: #D4E6F1;
+  --color-tier-officer: #7D6C3F;
+  --color-tier-officer-light: #F2EACD;
+
+  /* --- Typography --- */
+  --font-hebrew: "Frank Ruhl Libre", "David Libre", "Noto Serif Hebrew", serif;
+  --font-latin: "Libre Baskerville", "Georgia", serif;
+  --font-mono: "IBM Plex Mono", "Courier New", monospace;
+
+  /* --- Spacing --- */
+  --spacing-page-x: 2rem;
+  --spacing-page-y: 1.5rem;
+  --spacing-card: 1.25rem;
+  --spacing-section: 2.5rem;
+
+  /* --- Radii --- */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  /* --- Shadows --- */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 4px 24px rgba(0, 0, 0, 0.12);
+
+  /* --- Transitions --- */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 200ms ease-in-out;
+  --transition-slow: 250ms ease-out;
+}
+
+/* ============================================================
+   Base Styles
+   ============================================================ */
+
+html {
+  direction: rtl;
+  font-family: var(--font-hebrew);
+  font-size: 18px;
+  line-height: 1.8;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+}
+
+/* ============================================================
+   Form Focus — navy ring replaces legacy gold
+   ============================================================ */
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  border-color: var(--color-accent-primary) !important;
+  box-shadow: 0 0 0 3px var(--color-accent-primary-light);
+}
+
+/* Primary action button (sefer burgundy) */
+.btn-primary {
+  background-color: var(--color-accent-secondary-light);
+  border: 1px solid var(--color-accent-secondary);
+  color: var(--color-accent-secondary);
+  font-weight: 600;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+  cursor: pointer;
+}
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-accent-secondary);
+  color: var(--color-text-inverse);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Typography
+   ============================================================ */
+
+h1, h2, h3, h4 {
+  font-family: var(--font-hebrew);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+  margin: 0;
+}
+
+h1 { font-size: 2rem; font-weight: 700; }
+h2 { font-size: 1.5rem; font-weight: 700; }
+h3 { font-size: 1.25rem; font-weight: 600; }
+h4 { font-size: 1.1rem; font-weight: 600; }
+
+p {
+  margin: 0 0 1rem 0;
+  line-height: 1.8;
+}
+
+/* Latin text (English labels, wallet addresses) */
+[lang="en"], .text-latin {
+  font-family: var(--font-latin);
+  direction: ltr;
+}
+
+/* Monospace text */
+code, .mono, .wallet-address, .contract-address {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  direction: ltr;
+  unicode-bidi: embed;
+  background-color: var(--color-bg-code);
+  padding: 0.125rem 0.375rem;
+  border-radius: var(--radius-sm);
+}
+
+/* Captions and labels */
+.caption {
+  font-size: 0.875rem;
+  color: var(--color-text-tertiary);
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.01em;
+}
+
+/* ============================================================
+   Links
+   ============================================================ */
+
+a {
+  color: var(--color-text-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color var(--transition-fast);
+}
+
+a:hover {
+  color: var(--color-text-link-hover);
+}
+
+/* ============================================================
+   Focus States (global)
+   ============================================================ */
+
+*:focus {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-accent-primary);
+  outline-offset: 2px;
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-family: var(--font-hebrew);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.4;
+  cursor: pointer;
+  border: none;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.btn-primary {
+  background-color: var(--color-accent-primary);
+  color: var(--color-text-inverse);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-accent-primary-hover);
+}
+
+.btn-secondary {
+  background-color: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border-primary);
+}
+
+.btn-secondary:hover {
+  background-color: var(--color-bg-hover);
+  color: var(--color-text-primary);
+}
+
+.btn-destructive {
+  background-color: var(--color-status-error);
+  color: var(--color-text-inverse);
+}
+
+.btn-destructive:hover {
+  background-color: #7B241C;
+}
+
+.btn-ghost {
+  background-color: transparent;
+  color: var(--color-text-link);
+  padding: 0.5rem 0.75rem;
+}
+
+.btn-ghost:hover {
+  background-color: var(--color-bg-hover);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ============================================================
+   Cards
+   ============================================================ */
+
+.card {
+  background-color: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-card);
+}
+
+.card-hover:hover {
+  background-color: var(--color-bg-hover);
+  transition: background-color var(--transition-fast);
+}
+
+.card-header {
+  border-bottom: 1px solid var(--color-border-secondary);
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+/* ============================================================
+   Forms
+   ============================================================ */
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="search"],
+input[type="url"],
+textarea,
+select {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-family: var(--font-hebrew);
+  font-size: 1rem;
+  line-height: 1.8;
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--radius-md);
+  transition: border-color var(--transition-fast);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: var(--color-border-strong);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin-bottom: 0.375rem;
+}
+
+/* ============================================================
+   Tables
+   ============================================================ */
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-align: right; /* RTL */
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--color-border-primary);
+  background-color: var(--color-bg-tertiary);
+}
+
+tbody td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--color-border-secondary);
+  vertical-align: middle;
+}
+
+tbody tr:hover {
+  background-color: var(--color-bg-hover);
+}
+
+tbody tr:nth-child(even) {
+  background-color: var(--color-bg-tertiary);
+}
+
+tbody tr:nth-child(even):hover {
+  background-color: var(--color-bg-hover);
+}
+
+/* ============================================================
+   Badges & Pills
+   ============================================================ */
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+/* ============================================================
+   Tier Classes
+   ============================================================ */
+
+.tier-enlisted {
+  color: var(--color-tier-enlisted);
+}
+
+.tier-nco {
+  color: var(--color-tier-nco);
+}
+
+.tier-officer {
+  color: var(--color-tier-officer);
+}
+
+.tier-enlisted-bg {
+  background-color: var(--color-tier-enlisted-light);
+  color: var(--color-tier-enlisted);
+  border: 1px solid rgba(93, 109, 63, 0.2);
+}
+
+.tier-nco-bg {
+  background-color: var(--color-tier-nco-light);
+  color: var(--color-tier-nco);
+  border: 1px solid rgba(27, 79, 114, 0.2);
+}
+
+.tier-officer-bg {
+  background-color: var(--color-tier-officer-light);
+  color: var(--color-tier-officer);
+  border: 1px solid rgba(125, 108, 63, 0.2);
+}
+
+/* ============================================================
+   Status Badge Variants
+   ============================================================ */
+
+.status-success {
+  background-color: var(--color-status-success-light);
+  color: var(--color-status-success);
+  border: 1px solid rgba(30, 111, 80, 0.3);
+}
+
+.status-warning {
+  background-color: var(--color-status-warning-light);
+  color: var(--color-status-warning);
+  border: 1px solid rgba(166, 123, 44, 0.3);
+}
+
+.status-error {
+  background-color: var(--color-status-error-light);
+  color: var(--color-status-error);
+  border: 1px solid rgba(146, 43, 33, 0.3);
+}
+
+.status-info {
+  background-color: var(--color-status-info-light);
+  color: var(--color-status-info);
+  border: 1px solid rgba(27, 79, 114, 0.3);
+}
+
+.status-draft {
+  background-color: var(--color-status-draft-light);
+  color: var(--color-status-draft);
+  border: 1px solid rgba(138, 127, 114, 0.3);
+}
+
+/* ============================================================
+   Layout Utilities
+   ============================================================ */
+
+.page-container {
+  padding: var(--spacing-page-y) var(--spacing-page-x);
+}
+
+.page-header {
+  margin-bottom: var(--spacing-section);
+}
+
+.page-header h1 {
+  margin-bottom: 0.5rem;
+}
+
+.page-header-rule {
+  border: none;
+  border-top: 1px solid var(--color-border-primary);
+  margin-top: 0.5rem;
+}
+
+.section {
+  margin-bottom: var(--spacing-section);
+}
+
+/* ============================================================
+   Callout Box (for research questions, notices)
+   ============================================================ */
+
+.callout {
+  background-color: var(--color-bg-tertiary);
+  border-right: 3px solid var(--color-accent-primary); /* RTL: right side = leading edge */
+  padding: 1rem 1.25rem;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+
+.callout-warning {
+  border-right-color: var(--color-status-warning);
+  background-color: var(--color-status-warning-light);
+}
+
+.callout-error {
+  border-right-color: var(--color-status-error);
+  background-color: var(--color-status-error-light);
+}
+
+/* ============================================================
+   Loading Spinner
+   ============================================================ */
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border-primary);
+  border-top-color: var(--color-accent-primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ============================================================
+   Shimmer / Skeleton Loading
+   ============================================================ */
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.skeleton {
+  background-color: var(--color-bg-tertiary);
+  border-radius: var(--radius-sm);
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+/* ============================================================
+   Toast
+   ============================================================ */
+
+.toast {
+  background-color: var(--color-bg-topbar);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: 0.75rem 1rem;
+  border-right: 4px solid var(--color-status-info); /* RTL leading edge */
+}
+
+.toast-success { border-right-color: var(--color-status-success); }
+.toast-error { border-right-color: var(--color-status-error); }
+.toast-warning { border-right-color: var(--color-status-warning); }
+
+/* ============================================================
+   Scrollbar (subtle, academic)
+   ============================================================ */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-primary);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
+}
+
+/* ============================================================
+   Selection
+   ============================================================ */
+
+::selection {
+  background: var(--color-accent-primary-light);
+  color: var(--color-text-primary);
+}
+
+/* ============================================================
+   Print Styles
+   ============================================================ */
+
+/* ============================================================
+   Accessibility: readable minimums for hardcoded tiny classes
+   ============================================================ */
+
+/* text-[10px] appears throughout as labels/captions — floor at ~13px */
+.text-\[10px\] {
+  font-size: 0.722rem; /* 13px at 18px base */
+}
+
+@media print {
+  .sidebar,
+  .topbar,
+  .toast,
+  .btn,
+  .wallet-address {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+    color: black;
+    font-size: 12pt;
+  }
+
+  .card {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+}

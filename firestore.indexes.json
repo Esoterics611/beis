@@ -1,0 +1,68 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "masimot",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mivtzaId", "order": "ASCENDING" },
+        { "fieldPath": "status",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "masimot",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assigneeId", "order": "ASCENDING" },
+        { "fieldPath": "status",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tafkidim",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "masimaId", "order": "ASCENDING" },
+        { "fieldPath": "status",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "tafkidim",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "assigneeId", "order": "ASCENDING" },
+        { "fieldPath": "status",     "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "activities",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "timestamp", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "discussions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "masimaId",  "order": "ASCENDING" },
+        { "fieldPath": "parentId",  "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "peerReviews",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "masimaId",  "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "donations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

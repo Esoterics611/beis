@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+contracts/node_modules/
+
+# Build output
+build/
+.svelte-kit/
+dist/
+
+# Environment (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+
+# Hardhat
+contracts/artifacts/
+contracts/cache/
+contracts/deployments/
+contracts/coverage/
+contracts/coverage.json
+contracts/lcov.info
+
+# Claude Code
+.claude/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated artifacts
+docs/PUBLIC_INTRODUCTION.pdf
+contracts/typechain-types/
+
+# Local tooling state
+.claude/settings.local.json
+tmpclaude-*
