@@ -107,13 +107,15 @@ No critical findings. Symbolic analysis verified:
 
 ## Recommended Remediation Priority
 
-| Priority | Finding | Effort |
-|---|---|---|
-| **P1** | Post-deployment: transfer DEFAULT_ADMIN_ROLE to multisig (L-3) | 30 min |
-| **P2** | Clamp `quorumOverride` to a sane upper bound (L-2) | 1 hour |
-| **P3** | Restrict proposer cancellation to pre-vote period (M-2) | 2 hours |
-| **P4** | Harden `_extractRevertReason` with try/catch (L-1) | 1 hour |
-| **P5** | Add timelock to whitelist admin functions (M-1) | 1 day |
+| Priority | Finding | Effort | Status (2026-10-26) |
+|---|---|---|---|
+| **P1** | Post-deployment: transfer DEFAULT_ADMIN_ROLE to multisig (L-3) | 30 min | Open: an operational step at redeploy |
+| **P2** | Clamp `quorumOverride` to a sane upper bound (L-2) | 1 hour | Fixed in code: an override may not exceed `totalSupply × highest rank multiplier` ("Quorum unreachable") |
+| **P3** | Restrict proposer cancellation to pre-vote period (M-2) | 2 hours | Fixed in code: the proposer may cancel only an Active proposal with no votes; admin keeps Active/Queued cancel |
+| **P4** | Harden `_extractRevertReason` with try/catch (L-1) | 1 hour | Fixed in code: the Error(string) payload is validated instead of abi-decoded; anything else yields "Execution failed" |
+| **P5** | Add timelock to whitelist admin functions (M-1) | 1 day | Open |
+
+P2–P4 are ported from `Esoterics611/chayolei` (where they were fixed 2026-10-25) and covered by tests, but not yet on-chain: `BeisGovernance` has to be redeployed for them to take effect.
 
 ---
 
