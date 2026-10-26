@@ -5,6 +5,8 @@ import { requireMashpia, activityEntry } from '$lib/server/auth';
 import { PROPOSAL_TYPES, PROPOSAL_TYPE_CHAIN_INDEX } from '$lib/types';
 import type { ProposalType } from '$lib/types';
 import { submitProposalOnChain } from '$lib/server/governance-chain';
+import type { OnChainProposal } from '$lib/server/governance-chain';
+import { proposalDocId } from '$lib/server/governance-votes';
 
 const VALID_TYPES = new Set<string>(PROPOSAL_TYPES);
 
@@ -55,9 +57,9 @@ export const POST: RequestHandler = async ({ request }) => {
   // The backend deployer wallet (PROPOSER_ROLE) calls ChayoleiGovernance.propose()
   // so the proposal is anchored on-chain before being stored in Firestore.
   // This ensures the on-chain proposalId is always present in the Firestore doc.
-  let onChainProposalId: bigint;
+  let onChain: OnChainProposal;
   try {
-    onChainProposalId = await submitProposalOnChain({
+    onChain = await submitProposalOnChain({
       proposalType:  PROPOSAL_TYPE_CHAIN_INDEX[type as ProposalType],
       title:         title.trim(),
       description:   description.trim(),
@@ -71,8 +73,10 @@ export const POST: RequestHandler = async ({ request }) => {
   }
 
   // ── Write to Firestore with on-chain ID ────────────────────────
+  // The doc id is derived from the on-chain id: the chain listener may see
+  // ProposalCreated before this write lands and create the same doc.
   const now = new Date().toISOString();
-  const ref = adminDb.collection('proposals').doc();
+  const ref = adminDb.collection('proposals').doc(proposalDocId(onChain.id));
 
   const proposalData = {
     proposer,
@@ -83,8 +87,10 @@ export const POST: RequestHandler = async ({ request }) => {
     callData:           resolvedCallData,
     quorumRequired:     Number(quorumRequired)    || 10_000,
     totalVotingTokens:  Number(totalVotingTokens) || 0,
-    votingStartTime:    new Date(votingStartTime).toISOString(),
-    votingEndTime:      new Date(votingEndTime).toISOString(),
+    // The contract opens voting on creation for its own votingPeriod;
+    // store its window so the UI matches what castVote() will accept.
+    votingStartTime:    onChain.votingStart.toISOString(),
+    votingEndTime:      onChain.votingEnd.toISOString(),
     votesFor:           0,
     votesAgainst:       0,
     votesAbstain:       0,
@@ -92,25 +98,31 @@ export const POST: RequestHandler = async ({ request }) => {
     executed:           false,
     quorumReached:      false,
     snapshotBlock:      0,
-    onChainProposalId:  onChainProposalId.toString(),
+    onChainProposalId:  onChain.id.toString(),
     createdAt:          now,
     creatorTalmidId:    ctx.chaverId,
   };
 
-  const batch  = adminDb.batch();
-  batch.set(ref, proposalData);
-
   const actRef = adminDb.collection('activities').doc();
-  batch.set(actRef, activityEntry(
-    ctx.uid,
-    (ctx.decoded.name as string | undefined) ?? 'קצין',
-    'proposal_created',
-    ref.id,
-    title.trim(),
-    'הגיש הצעה לממשל',
-  ));
-
-  await batch.commit();
+  await adminDb.runTransaction(async tx => {
+    const existing = await tx.get(ref);
+    if (existing.exists) {
+      // The listener got here first with a placeholder: fill in the details,
+      // keep any votes it has already counted.
+      const { votesFor, votesAgainst, votesAbstain, quorumReached, ...details } = proposalData;
+      tx.set(ref, details, { merge: true });
+    } else {
+      tx.set(ref, proposalData);
+    }
+    tx.set(actRef, activityEntry(
+      ctx.uid,
+      (ctx.decoded.name as string | undefined) ?? 'קצין',
+      'proposal_created',
+      ref.id,
+      title.trim(),
+      'הגיש הצעה לממשל',
+    ));
+  });
 
   return json({ id: ref.id, ...proposalData }, { status: 201 });
 };

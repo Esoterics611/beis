@@ -52,6 +52,7 @@ import type {
 } from '$lib/types';
 import { contributionVotingWeight } from '$lib/types';
 import { toast } from './toast.svelte';
+import type { Eip1193Provider } from 'ethers';
 
 // Detect if Firebase is configured
 const USE_FIREBASE = typeof import.meta !== 'undefined' &&
@@ -80,6 +81,8 @@ class AppStore {
 
   // ── governance ────────────────────────────────────────────────
   proposals      = $state<Proposal[]>([]);
+  // The signed-in talmid's recorded votes, by proposal id (Firebase mode)
+  private myVotes: Record<string, Proposal['myVote']> = {};
   paymentStreams  = $state<PaymentStream[]>([]);
   treasuryStats  = $state<TreasuryStats | null>(null);
 
@@ -176,7 +179,7 @@ class AppStore {
     try {
       const { db } = await import('$lib/firebase');
       const {
-        collection, onSnapshot, query, orderBy, limit,
+        collection, collectionGroup, onSnapshot, query, orderBy, limit, where,
       } = await import('firebase/firestore');
 
       const snap = <T>(col: string, setter: (items: T[]) => void) =>
@@ -199,7 +202,7 @@ class AppStore {
         onSnapshot(collection(db, 'proposals'), s => {
           this.proposals = s.docs.map(d => {
             const data = d.data();
-            return { id: d.id, ...data, type: data['type'] ?? 'signal' } as Proposal;
+            return { id: d.id, ...data, type: data['type'] ?? 'signal', myVote: this.myVotes[d.id] ?? null } as Proposal;
           });
         }, err => {
           console.error('Firestore error [proposals]:', err);
@@ -223,6 +226,21 @@ class AppStore {
           }
         ),
       );
+
+      // Votes are keyed by wallet address; auth uids are `wallet_<address>`.
+      const myWallet = this.currentUserId?.startsWith('wallet_') ? this.currentUserId.slice('wallet_'.length) : null;
+      if (myWallet) {
+        this._unsubs.push(onSnapshot(
+          query(collectionGroup(db, 'votes'), where('walletAddress', '==', myWallet)),
+          s => {
+            this.myVotes = Object.fromEntries(
+              s.docs.map(d => [d.ref.parent.parent!.id, d.get('vote') as Proposal['myVote']]),
+            );
+            this.proposals = this.proposals.map(p => ({ ...p, myVote: this.myVotes[p.id] ?? null }));
+          },
+          err => console.error('Firestore error [votes]:', err),
+        ));
+      }
 
       this.loading = false;
     } catch (e) {
@@ -250,6 +268,7 @@ class AppStore {
     this.donations   = [];
     this.activities     = [];
     this.proposals      = [];
+    this.myVotes        = {};
     this.paymentStreams  = [];
     this.treasuryStats  = null;
     this.currentUserId = null;
@@ -1140,10 +1159,17 @@ class AppStore {
   async castVote(proposalId: string, vote: 'for' | 'against' | 'abstain'): Promise<void> {
     if (!this.currentUser) { toast.error('יש להתחבר כדי להצביע'); return; }
     if (USE_FIREBASE) {
-      // Resolve the on-chain proposal ID (stored in Firestore as onChainProposalId).
+      // Votes are cast on-chain from the talmid's wallet; Firestore only
+      // records what the chain confirmed.
       const proposal = this.proposals.find(p => p.id === proposalId);
       if (!proposal) { toast.error('הצעה לא נמצאה'); return; }
-      const onChainId = proposal.onChainProposalId ?? '0';
+      const onChainId = proposal.onChainProposalId;
+      if (!onChainId) { toast.error('ההצעה עדיין לא נרשמה ברשת'); return; }
+
+      const ethereum = typeof window !== 'undefined'
+        ? (window as unknown as { ethereum?: Eip1193Provider }).ethereum
+        : undefined;
+      if (!ethereum) { toast.error('כדי להצביע נדרש ארנק בדפדפן (MetaMask או דומה)'); return; }
 
       // Step 1: fetch a fresh EIP-712 rank attestation bound to this proposal.
       const attRes = await this.authFetch('/api/governance/attestation', {
@@ -1153,59 +1179,61 @@ class AppStore {
       if (!attRes.ok) { toast.error(await attRes.text()); return; }
       const attestation = await attRes.json();
 
-      // Step 2: submit on-chain via MetaMask (C2).
-      // support: 0=For, 1=Against, 2=Abstain (mirrors ChayoleiGovernance.castVote)
+      // Step 2: cast the vote on-chain.
+      // support: 0=For, 1=Against, 2=Abstain (mirrors BeisGovernance.castVote)
       const supportMap: Record<string, number> = { for: 0, against: 1, abstain: 2 };
-      const support = supportMap[vote];
-      let txHash: string | null = null;
-
-      if (typeof window !== 'undefined' && (window as unknown as { ethereum?: unknown }).ethereum) {
-        try {
-          const { BrowserProvider, Contract } = await import('ethers');
-          const provider = new BrowserProvider(
-            (window as unknown as { ethereum: unknown }).ethereum as ConstructorParameters<typeof BrowserProvider>[0],
-          );
-          const signer = await provider.getSigner();
-          const GOVERNANCE_ABI = [
-            'function castVote(uint256 proposalId, uint8 support, tuple(address voter, uint8 rankIndex, uint256 proposalId, uint256 nonce, uint256 expiry, bytes signature) att) external',
-          ];
-          const gov = new Contract(
-            import.meta.env.VITE_GOVERNANCE_ADDRESS as string,
-            GOVERNANCE_ABI,
-            signer,
-          );
-          const att = [
-            attestation.voter,
-            attestation.rankIndex,
-            BigInt(attestation.proposalId),
-            BigInt(attestation.nonce),
-            attestation.expiry,
-            attestation.signature,
-          ];
-          const tx = await gov.castVote(BigInt(onChainId), support, att);
-          toast.info('ממתין לאישור הרשת…');
-          const receipt = await tx.wait();
-          txHash = receipt?.hash ?? tx.hash;
-        } catch (e: unknown) {
-          const msg = e instanceof Error ? e.message : String(e);
-          if (msg.toLowerCase().includes('user rejected') || msg.toLowerCase().includes('denied')) {
-            toast.error('ההצבעה בוטלה על ידי המשתמש');
-            return;
-          }
-          // Log but continue — record vote in Firestore regardless so the UI
-          // reflects the intent; the on-chain tx can be replayed later.
-          console.warn('[castVote] on-chain tx failed, continuing with Firestore record:', e);
+      let txHash: string;
+      try {
+        const { BrowserProvider, Contract } = await import('ethers');
+        const signer = await new BrowserProvider(ethereum).getSigner();
+        const GOVERNANCE_ABI = [
+          'function castVote(uint256 proposalId, uint8 support, tuple(address voter, uint8 rankIndex, uint256 proposalId, uint256 nonce, uint256 expiry, bytes signature) att) external',
+        ];
+        const gov = new Contract(
+          import.meta.env.VITE_GOVERNANCE_ADDRESS as string,
+          GOVERNANCE_ABI,
+          signer,
+        );
+        const att = [
+          attestation.voter,
+          attestation.rankIndex,
+          BigInt(attestation.proposalId),
+          BigInt(attestation.nonce),
+          attestation.expiry,
+          attestation.signature,
+        ];
+        const tx = await gov.castVote(BigInt(onChainId), supportMap[vote], att);
+        toast.info('ממתין לאישור הרשת…');
+        const receipt = await tx.wait();
+        txHash = receipt?.hash ?? tx.hash;
+      } catch (e: unknown) {
+        const err = e as { code?: string; shortMessage?: string; message?: string };
+        if (err.code === 'ACTION_REJECTED') {
+          toast.error('ההצבעה בוטלה על ידי המשתמש');
+        } else {
+          // Nothing reached the chain, so nothing is recorded.
+          console.error('[castVote] on-chain vote failed:', e);
+          toast.error(`ההצבעה נכשלה ברשת: ${err.shortMessage ?? err.message ?? e}`);
         }
+        return;
       }
 
-      // Step 3: record the vote in Firestore (attestation stored for audit trail).
+      // The vote is on-chain from here on; show it as cast whatever the
+      // endpoint says, since the chain listener records it regardless.
+      this.myVotes = { ...this.myVotes, [proposalId]: vote };
+      this.proposals = this.proposals.map(p => p.id === proposalId ? { ...p, myVote: vote } : p);
+
+      // Step 3: have the server record it now, so tallies update at once.
       const res = await this.authFetch(`/api/governance/proposals/${proposalId}/vote`, {
         method: 'POST',
-        body: JSON.stringify({ vote, attestation, txHash }),
+        body: JSON.stringify({ txHash }),
       });
-      if (!res.ok) { toast.error(await res.text()); return; }
-      const suffix = txHash ? ` · tx: ${txHash.slice(0, 10)}…` : '';
-      toast.success(`הצבעתך נרשמה${suffix}`);
+      if (!res.ok) {
+        console.warn('[castVote] vote endpoint:', res.status, await res.text());
+        toast.info(`הצבעתך נשלחה לרשת · tx: ${txHash.slice(0, 10)}… · הספירה תתעדכן בקרוב`);
+        return;
+      }
+      toast.success(`הצבעתך נרשמה · tx: ${txHash.slice(0, 10)}…`);
       return;
     }
     // In-memory: optimistic update
