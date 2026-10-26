@@ -17,6 +17,25 @@ contract TestCallee {
         revert();
     }
 
+    error TwoWordError(uint256 a, uint256 b);
+
+    /// @dev 68 bytes of revert data that is not Error(string): the old
+    ///      abi.decode-based reason extraction panicked on this (audit L-1).
+    function revertWithCustomError() external pure {
+        revert TwoWordError(32, type(uint256).max);
+    }
+
+    /// @dev An Error(string) selector whose length word runs past the data.
+    function revertWithMalformedError() external pure {
+        assembly {
+            let ptr := mload(0x40)
+            mstore(ptr, shl(224, 0x08c379a0))
+            mstore(add(ptr, 4), 32)
+            mstore(add(ptr, 36), 1000)
+            revert(ptr, 68)
+        }
+    }
+
     /// @dev Calls gov.executeProposal(pid) and requires it succeeds.
     ///      Used to prove the nonReentrant guard blocks re-entry when
     ///      this function is itself triggered by executeProposal.

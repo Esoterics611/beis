@@ -201,6 +201,10 @@ contract BeisGovernance is AccessControl, ReentrancyGuard, EIP712 {
             require(allowedSelectors[uint8(proposalType)][selector], "Selector not allowed");
         }
 
+        // L-2: a quorum above the most voting weight that could exist can never
+        // be met. Overrides may lower the quorum but not exceed that ceiling.
+        require(quorumOverride <= _maxPossibleVoteWeight(), "Quorum unreachable");
+
         proposalId = ++proposalCount;
         uint256 vStart = block.timestamp;
         uint256 vEnd   = vStart + votingPeriod;
@@ -371,29 +375,43 @@ contract BeisGovernance is AccessControl, ReentrancyGuard, EIP712 {
         emit ProposalExecuted(proposalId);
     }
 
-    /// @dev Decode a revert reason from `returndata`, or fall back to a fixed string.
-    ///      Copies ret without the 4-byte Error(string) selector so abi.decode can
-    ///      decode it — byte-slice on memory arrays is unsupported in Solidity.
+    /// @dev Return the message of a standard Error(string) revert in `ret`, or
+    ///      "Execution failed" for anything else. L-1: the payload is validated
+    ///      instead of abi-decoded, so custom errors or malformed data from the
+    ///      callee can't panic and block the proposal from executing.
+    ///      Error(string) layout: selector (4) | offset = 0x20 (32) | length (32) | bytes.
     function _extractRevertReason(bytes memory ret) private pure returns (string memory) {
-        if (ret.length < 68) return "Execution failed";
-        bytes memory data = new bytes(ret.length - 4);
-        for (uint256 i = 0; i < data.length; i++) {
-            data[i] = ret[i + 4];
+        if (ret.length < 68 || bytes4(ret) != bytes4(0x08c379a0)) return "Execution failed";
+        uint256 offset;
+        uint256 len;
+        assembly ("memory-safe") {
+            offset := mload(add(ret, 36))   // skip length word (32) + selector (4)
+            len    := mload(add(ret, 68))
         }
-        return abi.decode(data, (string));
+        if (offset != 32 || len > ret.length - 68) return "Execution failed";
+        bytes memory reason = new bytes(len);
+        for (uint256 i = 0; i < len; i++) {
+            reason[i] = ret[68 + i];
+        }
+        return string(reason);
     }
 
     // ─── Cancel ──────────────────────────────────────────────────────────
+    /// @notice Admin may cancel an Active or Queued proposal. M-2: the proposer
+    ///         may withdraw only an Active proposal no one has voted on yet, so
+    ///         a proposer can't watch the vote and cancel a result they dislike.
     function cancelProposal(uint256 proposalId) external {
         Proposal storage p = proposals[proposalId];
-        require(
-            p.proposer == msg.sender || hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
-            "Not authorized"
-        );
+        bool isAdmin = hasRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        require(p.proposer == msg.sender || isAdmin, "Not authorized");
         require(
             p.state == ProposalState.Active || p.state == ProposalState.Queued,
             "Cannot cancel"
         );
+        if (!isAdmin) {
+            require(p.state == ProposalState.Active, "Proposer can cancel only Active proposals");
+            require(p.votesFor + p.votesAgainst + p.votesAbstain == 0, "Votes already cast");
+        }
         p.state = ProposalState.Cancelled;
         emit ProposalCancelled(proposalId);
     }
@@ -500,6 +518,16 @@ contract BeisGovernance is AccessControl, ReentrancyGuard, EIP712 {
     // ─── View helpers ────────────────────────────────────────────────────
     function getProposal(uint256 proposalId) external view returns (Proposal memory) {
         return proposals[proposalId];
+    }
+
+    /// @dev The most voting weight that could be cast right now: the whole
+    ///      TMIM supply voting at the highest rank multiplier.
+    function _maxPossibleVoteWeight() private view returns (uint256) {
+        uint256 maxPower;
+        for (uint256 i = 0; i < rankVotingPower.length; i++) {
+            if (rankVotingPower[i] > maxPower) maxPower = rankVotingPower[i];
+        }
+        return tmim.totalSupply() * maxPower;
     }
 
     function getVoteWeight(address voter, uint8 rankIndex) external view returns (uint256) {

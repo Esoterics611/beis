@@ -7,7 +7,9 @@
     "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
-    "check": "svelte-check --tsconfig ./tsconfig.json"
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "firebase emulators:exec --only firestore --project demo-beis \"vitest run\"",
+    "test:watch": "firebase emulators:exec --only firestore --project demo-beis \"vitest\""
   },
   "dependencies": {
     "@sveltejs/adapter-auto": "^7.0.0",
@@ -26,6 +28,8 @@
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.1.18",
-    "tailwindcss": "^4.1.18"
+    "firebase-tools": "^15.33.0",
+    "tailwindcss": "^4.1.18",
+    "vitest": "^3.2.4"
   }
 }

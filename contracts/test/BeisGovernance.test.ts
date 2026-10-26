@@ -100,6 +100,8 @@ const CALLEE_IFACE = new ethers.Interface([
   'function setValue(uint256)',
   'function revertWithMessage()',
   'function revertNoReason()',
+  'function revertWithCustomError()',
+  'function revertWithMalformedError()',
 ]);
 
 describe('BeisGovernance — rank attestation (C1)', () => {
@@ -584,6 +586,8 @@ describe('BeisGovernance — C3 execution gas control', () => {
     await gGov.connect(gAdmin).setAllowedSelector(PT_PARAMETER_UPDATE, sel4('setValue(uint256)'), true);
     await gGov.connect(gAdmin).setAllowedSelector(PT_PARAMETER_UPDATE, sel4('revertWithMessage()'), true);
     await gGov.connect(gAdmin).setAllowedSelector(PT_PARAMETER_UPDATE, sel4('revertNoReason()'), true);
+    await gGov.connect(gAdmin).setAllowedSelector(PT_PARAMETER_UPDATE, sel4('revertWithCustomError()'), true);
+    await gGov.connect(gAdmin).setAllowedSelector(PT_PARAMETER_UPDATE, sel4('revertWithMalformedError()'), true);
   });
 
   async function createQueuedProposal(callData: string): Promise<bigint> {
@@ -616,6 +620,21 @@ describe('BeisGovernance — C3 execution gas control', () => {
 
   it('reverts with "Execution failed" when callee reverts without reason', async () => {
     const callData = CALLEE_IFACE.encodeFunctionData('revertNoReason');
+    const pid = await createQueuedProposal(callData);
+    await expect(gGov.connect(gAdmin).executeProposal(pid))
+      .to.be.revertedWith('Execution failed');
+  });
+
+  // Audit L-1: 68+ bytes of non-Error(string) revert data used to panic in abi.decode.
+  it('reverts with "Execution failed" when callee reverts with a custom error', async () => {
+    const callData = CALLEE_IFACE.encodeFunctionData('revertWithCustomError');
+    const pid = await createQueuedProposal(callData);
+    await expect(gGov.connect(gAdmin).executeProposal(pid))
+      .to.be.revertedWith('Execution failed');
+  });
+
+  it('reverts with "Execution failed" when Error(string) data has a bogus length', async () => {
+    const callData = CALLEE_IFACE.encodeFunctionData('revertWithMalformedError');
     const pid = await createQueuedProposal(callData);
     await expect(gGov.connect(gAdmin).executeProposal(pid))
       .to.be.revertedWith('Execution failed');
@@ -711,6 +730,29 @@ describe('BeisGovernance — C4 coverage hardening', () => {
       await expect(c4Gov.connect(c4Admin).cancelProposal(pid))
         .to.emit(c4Gov, 'ProposalCancelled').withArgs(pid);
       expect((await c4Gov.getProposal(pid)).state).to.equal(5); // Cancelled
+    });
+
+    // Audit M-2: the proposer may not cancel once voting has started.
+    it('proposer cannot cancel once a vote has been cast', async () => {
+      const pid = await makeActiveProposal();
+      const att = await buildAttestation(c4Att, c4Gov, c4Voter.address, 0, pid);
+      await c4Gov.connect(c4Voter).castVote(pid, SUPPORT_FOR, toStructArg(att));
+      await expect(c4Gov.connect(c4Prop).cancelProposal(pid))
+        .to.be.revertedWith('Votes already cast');
+    });
+
+    it('proposer cannot cancel a Queued proposal', async () => {
+      const pid = await makeQueuedProposal();
+      await expect(c4Gov.connect(c4Prop).cancelProposal(pid))
+        .to.be.revertedWith('Proposer can cancel only Active proposals');
+    });
+
+    it('admin can still cancel after votes are cast', async () => {
+      const pid = await makeActiveProposal();
+      const att = await buildAttestation(c4Att, c4Gov, c4Voter.address, 0, pid);
+      await c4Gov.connect(c4Voter).castVote(pid, SUPPORT_FOR, toStructArg(att));
+      await expect(c4Gov.connect(c4Admin).cancelProposal(pid))
+        .to.emit(c4Gov, 'ProposalCancelled').withArgs(pid);
     });
 
     it('non-proposer, non-admin cannot cancel', async () => {
@@ -855,6 +897,19 @@ describe('BeisGovernance — C4 coverage hardening', () => {
       const pid = await c4Gov.proposalCount();
       const p   = await c4Gov.getProposal(pid);
       expect(p.quorumRequired).to.equal(500n);
+    });
+
+    // Audit L-2: supply is 500 TMIM and the top rank multiplier is 60.
+    it('propose accepts a quorumOverride up to the most weight that could vote', async () => {
+      await c4Gov.connect(c4Prop).propose(PT_SIGNAL, 't', 'd', ethers.ZeroAddress, '0x', 500 * 60);
+      expect((await c4Gov.getProposal(await c4Gov.proposalCount())).quorumRequired).to.equal(30_000n);
+    });
+
+    it('propose rejects an unreachable quorumOverride', async () => {
+      await expect(c4Gov.connect(c4Prop).propose(PT_SIGNAL, 't', 'd', ethers.ZeroAddress, '0x', 500 * 60 + 1))
+        .to.be.revertedWith('Quorum unreachable');
+      await expect(c4Gov.connect(c4Prop).propose(PT_SIGNAL, 't', 'd', ethers.ZeroAddress, '0x', ethers.MaxUint256))
+        .to.be.revertedWith('Quorum unreachable');
     });
 
     it('bootstrapSelectorWhitelist with non-zero registry trusts the registry address', async () => {

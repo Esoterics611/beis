@@ -91,6 +91,14 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // ── Votes — mirrored from the chain, where they are public anyway ──
+    // proposals/{id}/votes/{walletAddress}; the app queries them as a
+    // collection group to find the signed-in talmid's votes.
+    match /{path=**}/votes/{voter} {
+      allow read:  if isAuthenticated();
+      allow write: if false;
+    }
+
     // ── Payment Streams ────────────────────────────────────────
     match /paymentStreams/{streamId} {
       allow read:  if isAuthenticated();
