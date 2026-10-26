@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import ProposalCard from '$lib/components/ProposalCard.svelte';
   import VotingPower from '$lib/components/VotingPower.svelte';
@@ -129,7 +130,7 @@
               >
                 <td class="px-4 py-3 font-mono text-xs" style="color: var(--color-text-tertiary);">{p.id}</td>
                 <td class="px-4 py-3">
-                  <a href="/governance/{p.id}" style="color: var(--color-text-primary); text-decoration: none;">
+                  <a href={href(`/governance/${p.id}`)} style="color: var(--color-text-primary); text-decoration: none;">
                     {p.title}
                   </a>
                 </td>

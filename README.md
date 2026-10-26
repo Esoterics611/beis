@@ -37,6 +37,18 @@ npx hardhat test
 
 Requires Node 20+.
 
+### Demo and tests
+
+```bash
+npm run dev                         # without Firebase settings in .env, the app runs on sample data
+bash scripts/build-demo.sh          # the clickable demo: demo-build/beis-demo.html, one file that opens from disk
+bash scripts/e2e/run-demo.sh        # builds the demo and clicks through it in a browser (needs Playwright)
+npm test                            # unit and server tests, against the Firestore emulator (needs Java)
+cd contracts && npx hardhat test    # contract tests
+```
+
+The demo runs on the sample data in `src/lib/stores/mock-data.ts`, in memory: nothing is sent anywhere, and a reload starts it over. CI (`.github/workflows/ci.yml`) runs all of the above on every pull request and on `main`, and keeps each demo build as a downloadable artifact named `beis-demo`.
+
 ---
 
 ## Repo layout

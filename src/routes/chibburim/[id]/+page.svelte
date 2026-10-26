@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { go, href } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDeadline, formatMasimaType } from '$lib/utils/format';
@@ -115,9 +116,9 @@
 <div class="page-container space-y-6" onclick={closeAssign}>
   <!-- ניווט -->
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-tertiary);">
-    <a href="/chaburot" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
+    <a href={href(`/chaburot`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
     <span>/</span>
-    <a href="/chaburot/{mivtza.id}" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>{mivtza.shem}</a>
+    <a href={href(`/chaburot/${mivtza.id}`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>{mivtza.shem}</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">{masima.shem}</span>
   </div>
@@ -142,14 +143,14 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-xs">
           <div>
             <span class="block mb-1" style="color: var(--color-text-tertiary);">חבורה</span>
-            <a href="/chaburot/{mivtza.id}" style="color: var(--color-accent-secondary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}>{mivtza.shem}</a>
+            <a href={href(`/chaburot/${mivtza.id}`)} style="color: var(--color-accent-secondary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}>{mivtza.shem}</a>
           </div>
           <div>
             <span class="block mb-1" style="color: var(--color-text-tertiary);">חבר משויך</span>
             {#if assignee}
               <div class="flex items-center gap-1">
                 <TalmidAvatar shem={assignee.shem} score={assignee.contribution_score} isOnline={assignee.isOnline} size="sm" />
-                <a href="/anash/{assignee.id}" style="color: var(--color-text-primary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; }}>{assignee.shem}</a>
+                <a href={href(`/anash/${assignee.id}`)} style="color: var(--color-text-primary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; }}>{assignee.shem}</a>
               </div>
             {:else}
               <span style="color: var(--color-text-tertiary);">לא שוייך</span>
@@ -158,7 +159,7 @@
           <div>
             <span class="block mb-1" style="color: var(--color-text-tertiary);">מבקר עמיתים</span>
             {#if reviewer}
-              <a href="/anash/{reviewer.id}" style="color: var(--color-accent-primary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}>{reviewer.shem}</a>
+              <a href={href(`/anash/${reviewer.id}`)} style="color: var(--color-accent-primary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'none'; }}>{reviewer.shem}</a>
             {:else}
               <span style="color: var(--color-text-tertiary);">לא שוייך</span>
             {/if}
@@ -367,7 +368,7 @@
       <h3 class="text-xs uppercase tracking-wider" style="color: var(--color-text-tertiary);">שלבים ({tafkidim.length})</h3>
       {#if app.isMashpia}
         <a
-          href="/seifim/new?chibburId={masima.id}"
+          href={href(`/seifim/new?chibburId=${masima.id}`)}
           class="text-xs transition-colors duration-150"
           style="color: var(--color-accent-secondary); text-decoration: none;"
           onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.textDecoration = 'underline'; }}
@@ -653,6 +654,6 @@
   message="האם למחוק את '{masima?.shem ?? ''}'? כל השלבים והביקורות יימחקו. פעולה זו אינה הפיכה."
   confirmLabel="מחק"
   destructive={true}
-  onconfirm={() => { if (masima) { app.deleteMasima(masima.id); window.location.href = '/chibburim'; } }}
+  onconfirm={() => { if (masima) { app.deleteMasima(masima.id); go('/chibburim'); } }}
   oncancel={() => showDeleteConfirm = false}
 />

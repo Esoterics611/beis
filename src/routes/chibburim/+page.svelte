@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDeadline } from '$lib/utils/format';
   import StatusBadge from '$components/StatusBadge.svelte';
@@ -35,7 +36,7 @@
       <p class="text-xs mt-0.5" style="color: var(--color-text-secondary);">כל החיבורים בכל החבורות</p>
     </div>
     <a
-      href="/chibburim/new"
+      href={href(`/chibburim/new`)}
       class="px-4 py-2 text-sm font-semibold transition-colors duration-150"
       style="
         background-color: rgba(125,108,63,0.1);
@@ -82,7 +83,7 @@
       {@const reviewCount = app.getMasimaPeerReviews(m.id).length}
       {@const progress   = app.getMasimaProgress(m.id)}
       <a
-        href="/chibburim/{m.id}"
+        href={href(`/chibburim/${m.id}`)}
         class="flex items-center gap-5 px-6 py-5 transition-colors duration-150"
         style="border-bottom: 1px solid var(--color-border-secondary); text-decoration: none; color: inherit;"
         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}

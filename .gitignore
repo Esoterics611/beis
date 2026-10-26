@@ -43,3 +43,6 @@ contracts/typechain-types/
 # Local tooling state
 .claude/settings.local.json
 tmpclaude-*
+
+# Clickable demo (scripts/build-demo.sh)
+demo-build/

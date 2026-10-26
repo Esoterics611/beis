@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  app:
+    name: App — typecheck, build, tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      # The Firestore emulator used by `npm test` needs Java.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: npm ci
+      - run: npm run check
+      # Secrets are read at runtime, so the build needs none.
+      - run: npm run build
+      - run: npm test
+
+  contracts:
+    name: Contracts — compile and test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: contracts
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: contracts/package-lock.json
+      - run: npm ci
+      - run: npx hardhat test
+
+  demo:
+    name: Demo — static build, browser flows
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm install -g playwright@1.63.0 && npx -y playwright@1.63.0 install --with-deps chromium
+      # Builds the clickable demo on the sample data and clicks through it:
+      # every section, detail pages, a link with a query string, a vote.
+      - run: NODE_PATH=$(npm root -g) bash scripts/e2e/run-demo.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: beis-demo
+          path: demo-build/

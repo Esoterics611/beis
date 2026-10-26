@@ -16,13 +16,16 @@ export function formatHasmada(amount: number): string {
 export function formatDate(iso: string): string {
   const d = new Date(iso);
   const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
+  // Past times read "לפני …"; future ones (a vote that closes later) "בעוד …".
+  const signedMs = now.getTime() - d.getTime();
+  const when = signedMs < 0 ? 'בעוד' : 'לפני';
+  const diffMs = Math.abs(signedMs);
   const diffHours = diffMs / (1000 * 60 * 60);
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
 
-  if (diffHours < 1) return `לפני ${Math.floor(diffMs / 60000)} דק'`;
-  if (diffHours < 24) return `לפני ${Math.floor(diffHours)} שע'`;
-  if (diffDays < 7) return `לפני ${Math.floor(diffDays)} ימים`;
+  if (diffHours < 1) return `${when} ${Math.floor(diffMs / 60000)} דק'`;
+  if (diffHours < 24) return `${when} ${Math.floor(diffHours)} שע'`;
+  if (diffDays < 7) return `${when} ${Math.floor(diffDays)} ימים`;
   if (diffDays < 365) return d.toLocaleDateString('he-IL', { month: 'short', day: 'numeric' });
   return d.toLocaleDateString('he-IL', { month: 'short', day: 'numeric', year: 'numeric' });
 }

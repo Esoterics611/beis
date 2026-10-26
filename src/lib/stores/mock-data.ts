@@ -17,6 +17,7 @@ import type {
   Maamar,
   Farbrengen,
   SederScheduleItem,
+  Proposal,
 } from '$lib/types';
 
 // ── משתמש נוכחי ─────────────────────────────────────────────────
@@ -1239,4 +1240,76 @@ export const MOCK_SEDER: SederScheduleItem[] = [
   { id: 'sed-005', label: 'סדר ניגלה שני',      startTime: '14:30', endTime: '18:00', type: 'nigleh',    status: 'upcoming'  },
   { id: 'sed-006', label: 'מעריב',               startTime: '20:00', endTime: '20:30', type: 'tefila',    status: 'upcoming'  },
   { id: 'sed-007', label: 'סדר חסידות ערב',     startTime: '21:00', endTime: '23:00', type: 'chassidus', status: 'upcoming'  },
+];
+
+// ── הכרעות (Governance proposals) ───────────────────────────────
+// Voting windows are relative to now, so the open proposals stay open.
+const DAY = 86_400_000;
+const daysFromNow = (d: number) => new Date(Date.now() + d * DAY).toISOString();
+const NO_CALL = { target: '0x0000000000000000000000000000000000000000', callData: '0x' };
+
+export const MOCK_PROPOSALS: Proposal[] = [
+  {
+    id: 'prop-001',
+    proposer: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
+    type: 'signal',
+    title: 'פתיחת מסלול תלמוד והלכה בחבורות הקיץ',
+    description: 'להוסיף לחבורות הקיץ מסלול בגמרא ובהלכה לצד החסידות, עם מגיה ומבקר בכל חבורה.',
+    ...NO_CALL,
+    votesFor: 31, votesAgainst: 6, votesAbstain: 2,
+    snapshotBlock: 0,
+    votingStartTime: daysFromNow(-2),
+    votingEndTime: daysFromNow(3),
+    state: 'active', executed: false,
+    quorumReached: false, quorumRequired: 60, totalVotingTokens: 120,
+    myVote: null,
+  },
+  {
+    id: 'prop-002',
+    proposer: '0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c',
+    type: 'chaburah_funding',
+    title: 'מימון חבורת "ליקוטי ביאורים" — 20,000 שכר',
+    description: 'הקצאת 20,000 שכר מהאוצר לחבורה המכינה קובץ ביאורים על התניא בסדר לימוד יומי.',
+    ...NO_CALL,
+    callDataDecoded: 'fundChaburah(mv-002, 20000)',
+    votesFor: 44, votesAgainst: 12, votesAbstain: 5,
+    snapshotBlock: 0,
+    votingStartTime: daysFromNow(-4),
+    votingEndTime: daysFromNow(1),
+    state: 'active', executed: false,
+    quorumReached: true, quorumRequired: 60, totalVotingTokens: 120,
+    myVote: null,
+  },
+  {
+    id: 'prop-003',
+    proposer: '0x1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b',
+    type: 'parameter_update',
+    title: 'העלאת השכר על ביקורת עמיתים ל־150',
+    description: 'ביקורת יסודית לוקחת זמן; השכר עליה עולה מ־100 ל־150 שכר לכל ביקורת שהתקבלה.',
+    ...NO_CALL,
+    callDataDecoded: 'setParameter(peerReviewReward, 150)',
+    votesFor: 72, votesAgainst: 9, votesAbstain: 4,
+    snapshotBlock: 0,
+    votingStartTime: daysFromNow(-20),
+    votingEndTime: daysFromNow(-13),
+    executionTime: daysFromNow(-11),
+    state: 'executed', executed: true,
+    quorumReached: true, quorumRequired: 60, totalVotingTokens: 120,
+    myVote: 'for',
+  },
+  {
+    id: 'prop-004',
+    proposer: '0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c',
+    type: 'signal',
+    title: 'מעבר לסדר ניגלה אחד ארוך במקום שניים',
+    description: 'לאחד את שני סדרי הניגלה לסדר אחד של חמש שעות.',
+    ...NO_CALL,
+    votesFor: 18, votesAgainst: 47, votesAbstain: 6,
+    snapshotBlock: 0,
+    votingStartTime: daysFromNow(-30),
+    votingEndTime: daysFromNow(-23),
+    state: 'failed', executed: false,
+    quorumReached: true, quorumRequired: 60, totalVotingTokens: 120,
+    myVote: 'against',
+  },
 ];

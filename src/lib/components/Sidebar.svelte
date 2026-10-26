@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href, routePath } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
   import { formatTmim } from '$lib/utils/format';
@@ -34,7 +35,7 @@
     return currentPath.startsWith(href);
   }
 
-  let currentPath = $derived($page.url.pathname);
+  let currentPath = $derived(routePath($page.url));
   let user = $derived(app.currentUser);
   let makom = $derived(app.currentMakom);
 </script>
@@ -52,7 +53,7 @@
     style="border-bottom: 1px solid var(--color-border-sidebar);"
   >
     <a
-      href="/"
+      href={href(`/`)}
       class="flex items-center justify-center flex-shrink-0"
       aria-label="Beis — דף הבית"
     >
@@ -72,7 +73,7 @@
       {@const active = isActive(item.href, currentPath)}
       {@const badge = item.badge?.()}
       <a
-        href={item.href}
+        href={href(item.href)}
         class="flex items-center gap-3 px-3 py-2.5 text-sm transition-all duration-150 group relative"
         style="
           border-radius: var(--radius-sm);
@@ -111,7 +112,7 @@
     {#each bottomNav as item}
       {@const active = isActive(item.href, currentPath)}
       <a
-        href={item.href}
+        href={href(item.href)}
         class="flex items-center gap-3 px-3 py-2 text-sm transition-all duration-150"
         style="
           border-radius: var(--radius-sm);
@@ -133,7 +134,7 @@
   <!-- User identity section -->
   {#if user}
     <div style="border-top: 1px solid var(--color-border-sidebar);" class="p-3">
-      <a href="/settings" class="block" aria-label="הגדרות פרופיל — {user.shem}">
+      <a href={href(`/settings`)} class="block" aria-label="הגדרות פרופיל — {user.shem}">
         {#if !app.sidebarCollapsed}
           <div class="flex items-center gap-3">
             <div class="relative flex-shrink-0">

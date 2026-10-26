@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
 
   // Publication campaign goals
@@ -24,8 +25,7 @@
   let totalRaised = $derived(ledger.reduce((s, d) => s + d.amount, 0));
 
   $effect(() => {
-    fetch('/api/support/donations')
-      .then(r => r.json())
+    app.publicDonations()
       .then((rows: typeof ledger) => { ledger = rows; ledgerLoading = false; })
       .catch(() => { ledgerLoading = false; });
   });
@@ -47,7 +47,7 @@
       כל תרומה מאפשרת לתלמידינו לחקור, לכתוב ולהנגיש תורה לעולם הרחב.
     </p>
     <a
-      href="/support/ledger"
+      href={href(`/support/ledger`)}
       class="text-sm mt-4 inline-block"
       style="color: var(--color-accent-primary); text-decoration: underline;"
     >ראו את כל התורמים ←</a>

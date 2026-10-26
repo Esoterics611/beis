@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDate } from '$lib/utils/format';
   import TokenDisplay from '$components/TokenDisplay.svelte';
@@ -160,7 +161,7 @@
           <div class="space-y-1">
             <div class="flex items-center justify-between text-xs">
               <a
-                href="/chaburot/{mivtza.id}"
+                href={href(`/chaburot/${mivtza.id}`)}
                 style="color: var(--color-text-primary); text-decoration: none;"
                 onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }}
                 onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; }}

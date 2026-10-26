@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { go, href, routeQuery } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import type { TafkidType, TafkidPriority } from '$lib/types';
-  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
 
   const canCreate = $derived(app.isMashpia);
@@ -25,7 +25,7 @@
   // ── form state ────────────────────────────────────────────────
   let shem = $state('');
   let description = $state('');
-  let masimaId = $state($page.url.searchParams.get('chibburId') ?? '');
+  let masimaId = $state(routeQuery($page.url, 'chibburId') ?? '');
   let type = $state<TafkidType>('research');
   let priority = $state<TafkidPriority>('medium');
   let assigneeId = $state('');
@@ -64,7 +64,7 @@
         tokenReward: tmimReward,
         deadline: dueDate || undefined,
       });
-      goto(`/chibburim/${masimaId}`);
+      go(`/chibburim/${masimaId}`);
     } finally {
       submitting = false;
     }
@@ -77,12 +77,12 @@
     background-color: rgba(239, 68, 68, 0.1);
   ">
     <p class="font-medium text-red-400">נדרשת הרשאת מנחה ליצירת שלב</p>
-    <a href="/seifim" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
+    <a href={href(`/seifim`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
   </div>
 {:else}
 <div class="space-y-6 max-w-2xl">
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-secondary);">
-    <a href="/seifim" class="hover:underline" style="color: var(--color-accent-secondary);">שלבים</a>
+    <a href={href(`/seifim`)} class="hover:underline" style="color: var(--color-accent-secondary);">שלבים</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">שלב חדש</span>
   </div>
@@ -282,7 +282,7 @@
         class="flex-1 py-2.5 rounded-lg font-medium text-sm btn-primary disabled:opacity-50">
         {submitting ? 'יוצר...' : 'צור שלב'}
       </button>
-      <a href="/seifim" class="px-4 py-2.5 rounded-lg border text-sm hover:transition-all" style="
+      <a href={href(`/seifim`)} class="px-4 py-2.5 rounded-lg border text-sm hover:transition-all" style="
         border-color: var(--color-border-primary);
         color: var(--color-text-secondary);
         background-color: transparent;

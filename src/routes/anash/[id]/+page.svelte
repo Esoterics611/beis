@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
   import { contributionVotingWeight } from '$lib/types';
@@ -255,7 +256,7 @@
       <div>
         {#each mivtzaot as mivtza}
           <a
-            href="/chaburot/{mivtza.id}"
+            href={href(`/chaburot/${mivtza.id}`)}
             class="block px-5 py-3.5 transition-colors duration-150"
             style="border-bottom: 1px solid var(--color-border-secondary); text-decoration: none;"
             onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}
@@ -299,7 +300,7 @@
                 "
               >{p.myVote === 'for' ? 'בעד' : p.myVote === 'against' ? 'נגד' : 'נמנע'}</span>
               <div class="flex-1 min-w-0">
-                <a href="/governance/{p.id}" class="text-sm" style="color: var(--color-text-primary); text-decoration: none;">{p.title}</a>
+                <a href={href(`/governance/${p.id}`)} class="text-sm" style="color: var(--color-text-primary); text-decoration: none;">{p.title}</a>
                 <div class="text-[11px]" style="color: var(--color-text-tertiary);">{PROPOSAL_TYPE_LABELS[p.type] ?? p.type}</div>
               </div>
               <span

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDeadline, mivtzaCategoryLabel, formatMivtzaType } from '$lib/utils/format';
   import ProgressBar from '$components/ProgressBar.svelte';
@@ -56,7 +57,7 @@
     </div>
     {#if app.isMashpia}
       <a
-        href="/chaburot/new"
+        href={href(`/chaburot/new`)}
         class="flex items-center gap-2 px-4 py-2 text-sm font-semibold transition-colors duration-150"
         style="
           background-color: rgba(125,108,63,0.1);
@@ -135,7 +136,7 @@
       {@const makom    = app.getMakom(mivtza.locationId)}
       {@const progress = app.getMivtzaProgress(mivtza.id)}
       <a
-        href="/chaburot/{mivtza.id}"
+        href={href(`/chaburot/${mivtza.id}`)}
         class="block px-6 py-5 transition-colors duration-150"
         style="border-bottom: 1px solid var(--color-border-secondary); text-decoration: none; color: inherit;"
         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}

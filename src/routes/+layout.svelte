@@ -1,19 +1,19 @@
 <script lang="ts">
+  import { go, routePath } from '$lib/utils/nav';
   import '../app.css';
   import Sidebar from '$components/Sidebar.svelte';
   import TopBar from '$components/TopBar.svelte';
   import Toast from '$components/Toast.svelte';
   import LoadingOverlay from '$components/LoadingOverlay.svelte';
   import { app } from '$stores/app.svelte';
-  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
 
   let { children } = $props();
 
   // Redirect unauthenticated users to /signup (except when already on /signup)
   $effect(() => {
-    if (!app.isAuthenticated && !$page.url.pathname.startsWith('/signup')) {
-      goto('/signup');
+    if (!app.isAuthenticated && !routePath($page.url).startsWith('/signup')) {
+      go('/signup');
     }
   });
 </script>

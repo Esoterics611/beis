@@ -1,7 +1,7 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
-  import { goto } from '$app/navigation';
 
   let mivtzaId = $derived($page.params.id ?? '');
   let mivtza = $derived(mivtzaId ? app.getMivtza(mivtzaId) : null);
@@ -36,14 +36,14 @@
   <div class="page-container">
     <div class="rounded-xl border p-6 text-center" style="border-color: rgba(239,68,68,0.3); background-color: rgba(239,68,68,0.1);">
       <p class="font-medium text-red-400">חבורה לא נמצאה</p>
-      <a href="/chaburot" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
+      <a href={href(`/chaburot`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
     </div>
   </div>
 {:else if isAlreadyEnrolled}
   <div class="page-container">
     <div class="rounded-xl border p-6 text-center" style="border-color: rgba(34,197,94,0.3); background-color: rgba(34,197,94,0.06);">
       <p class="font-medium" style="color: var(--color-status-success);">כבר נרשמת לחבורה זו</p>
-      <a href="/chaburot/{mivtzaId}" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור לחבורה ←</a>
+      <a href={href(`/chaburot/${mivtzaId}`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור לחבורה ←</a>
     </div>
   </div>
 {:else if submitted}
@@ -52,15 +52,15 @@
       <div class="text-4xl">✓</div>
       <h3 class="text-lg font-semibold" style="color: var(--color-text-primary);">הבקשה נשלחה!</h3>
       <p class="text-sm" style="color: var(--color-text-secondary);">בקשתך להצטרף ל"{mivtza.shem}" התקבלה ותסוקר על ידי המשפיע. תקבל עדכון בקרוב.</p>
-      <a href="/chaburot/{mivtzaId}" class="inline-block mt-2 text-xs hover:underline" style="color: var(--color-accent-secondary);">חזור לחבורה ←</a>
+      <a href={href(`/chaburot/${mivtzaId}`)} class="inline-block mt-2 text-xs hover:underline" style="color: var(--color-accent-secondary);">חזור לחבורה ←</a>
     </div>
   </div>
 {:else}
 <div class="page-container space-y-6 max-w-2xl">
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-tertiary);">
-    <a href="/chaburot" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
+    <a href={href(`/chaburot`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
     <span>/</span>
-    <a href="/chaburot/{mivtzaId}" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>{mivtza.shem}</a>
+    <a href={href(`/chaburot/${mivtzaId}`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>{mivtza.shem}</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">מועמדות</span>
   </div>
@@ -126,7 +126,7 @@
         {submitting ? 'שולח...' : 'שלח מועמדות'}
       </button>
       <a
-        href="/chaburot/{mivtzaId}"
+        href={href(`/chaburot/${mivtzaId}`)}
         class="px-4 py-2.5 rounded-lg border text-sm"
         style="border-color: var(--color-border-primary); color: var(--color-text-secondary); background: transparent;"
         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}

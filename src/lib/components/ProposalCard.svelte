@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import type { Proposal } from '$lib/types';
   import { PROPOSAL_TYPE_LABELS } from '$lib/types';
   import { app } from '$stores/app.svelte';
@@ -51,7 +52,7 @@
 </script>
 
 <a
-  href="/governance/{proposal.id}"
+  href={href(`/governance/${proposal.id}`)}
   class="block space-y-3 transition-shadow duration-150"
   style="
     background-color: var(--color-bg-secondary);

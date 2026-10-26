@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import { formatTmim } from '$lib/utils/format';
   import TalmidAvatar from '$components/TalmidAvatar.svelte';
@@ -97,7 +98,7 @@
               {#each members as t}
                 {@const makom = app.getMakom(t.makomId)}
                 <a
-                  href="/anash/{t.id}"
+                  href={href(`/anash/${t.id}`)}
                   class="flex items-center gap-4 px-6 py-4 transition-colors duration-150"
                   style="border-bottom: 1px solid var(--color-border-secondary); text-decoration: none; color: inherit;"
                   onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}
@@ -171,7 +172,7 @@
                     {@const m = app.getTalmid(mid)}
                     {#if m}
                       <a
-                        href="/anash/{m.id}"
+                        href={href(`/anash/${m.id}`)}
                         class="flex items-center gap-2 px-2 py-1.5 transition-colors duration-150"
                         style="border-radius: var(--radius-sm); text-decoration: none;"
                         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-secondary)'; }}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDeadline } from '$lib/utils/format';
   import StatusBadge from '$components/StatusBadge.svelte';
@@ -43,7 +44,7 @@
     </div>
     <div class="flex gap-2 flex-wrap">
       <a
-        href="/seifim/new"
+        href={href(`/seifim/new`)}
         class="px-3 py-1.5 text-xs font-semibold transition-colors duration-150"
         style="
           background-color: rgba(125,108,63,0.1);

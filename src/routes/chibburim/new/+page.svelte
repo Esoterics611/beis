@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { go, href, routeQuery } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import type { MasimaType } from '$lib/types';
   import { MASIMA_TYPE_DEFAULTS } from '$lib/types';
-  import { goto } from '$app/navigation';
   import { page } from '$app/stores';
 
   const canCreate = $derived(app.isMashpia);
@@ -13,7 +13,7 @@
   // ── form state ────────────────────────────────────────────────
   let shem = $state('');
   let description = $state('');
-  let mivtzaId = $state($page.url.searchParams.get('mivtzaId') ?? '');
+  let mivtzaId = $state(routeQuery($page.url, 'mivtzaId') ?? '');
   let type = $state<MasimaType>('research_paper');
   let assigneeId = $state('');
   let tmimReward = $state(MASIMA_TYPE_DEFAULTS['research_paper'].baseReward);
@@ -57,7 +57,7 @@
         submissionNotes: undefined,
         reviewerId: undefined,
       });
-      goto(`/chibburim/${masima.id}`);
+      go(`/chibburim/${masima.id}`);
     } finally {
       submitting = false;
     }
@@ -79,12 +79,12 @@
 {#if !canCreate}
   <div class="rounded-xl border p-6 text-center" style="border-color: rgba(239, 68, 68, 0.3); background-color: rgba(239, 68, 68, 0.1);">
     <p class="font-medium text-red-400">נדרשת הרשאת מנחה ליצירת חיבור</p>
-    <a href="/chibburim" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
+    <a href={href(`/chibburim`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
   </div>
 {:else}
 <div class="space-y-6 max-w-2xl">
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-secondary);">
-    <a href="/chibburim" class="hover:underline" style="color: var(--color-accent-secondary);">חיבורים</a>
+    <a href={href(`/chibburim`)} class="hover:underline" style="color: var(--color-accent-secondary);">חיבורים</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">חיבור חדש</span>
   </div>
@@ -233,7 +233,7 @@
         class="flex-1 py-2.5 rounded-lg font-medium text-sm btn-primary disabled:opacity-50">
         {submitting ? 'יוצר...' : 'צור חיבור'}
       </button>
-      <a href="/chibburim" class="px-4 py-2.5 rounded-lg border text-sm" style="border-color: var(--color-border-primary); color: var(--color-text-secondary); background: transparent;"
+      <a href={href(`/chibburim`)} class="px-4 py-2.5 rounded-lg border text-sm" style="border-color: var(--color-border-primary); color: var(--color-text-secondary); background: transparent;"
         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}
         onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}>
         ביטול

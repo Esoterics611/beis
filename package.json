@@ -27,6 +27,7 @@
     "vite": "^6.4.1"
   },
   "devDependencies": {
+    "@sveltejs/adapter-static": "^3.0.10",
     "@tailwindcss/vite": "^4.1.18",
     "firebase-tools": "^15.33.0",
     "tailwindcss": "^4.1.18",

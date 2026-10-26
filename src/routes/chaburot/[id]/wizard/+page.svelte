@@ -1,9 +1,9 @@
 <script lang="ts">
+  import { go, href } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
   import type { MasimaType } from '$lib/types';
   import { MASIMA_TYPE_DEFAULTS } from '$lib/types';
-  import { goto } from '$app/navigation';
 
   let mivtzaId = $derived($page.params.id ?? '');
   let mivtza = $derived(mivtzaId ? app.getMivtza(mivtzaId) : null);
@@ -83,7 +83,7 @@
         });
         submitted++;
       }
-      goto(`/chaburot/${mivtzaId}`);
+      go(`/chaburot/${mivtzaId}`);
     } finally {
       submitting = false;
     }
@@ -98,22 +98,22 @@
   <div class="page-container">
     <div class="rounded-xl border p-6 text-center" style="border-color: rgba(239,68,68,0.3); background-color: rgba(239,68,68,0.1);">
       <p class="font-medium text-red-400">נדרשת הרשאת מנחה</p>
-      <a href="/chaburot/{mivtzaId}" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
+      <a href={href(`/chaburot/${mivtzaId}`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
     </div>
   </div>
 {:else if !mivtza}
   <div class="page-container">
     <div class="rounded-xl border p-6 text-center" style="border-color: rgba(239,68,68,0.3); background-color: rgba(239,68,68,0.1);">
       <p class="font-medium text-red-400">חבורה לא נמצאה</p>
-      <a href="/chaburot" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
+      <a href={href(`/chaburot`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
     </div>
   </div>
 {:else}
 <div class="page-container space-y-6">
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-tertiary);">
-    <a href="/chaburot" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
+    <a href={href(`/chaburot`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
     <span>/</span>
-    <a href="/chaburot/{mivtzaId}" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>{mivtza.shem}</a>
+    <a href={href(`/chaburot/${mivtzaId}`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>{mivtza.shem}</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">אשף חיבורים</span>
   </div>
@@ -232,7 +232,7 @@
         class="flex-1 py-2.5 rounded-lg font-medium text-sm btn-primary disabled:opacity-50">
         {submitting ? `יוצר ${submitted}/${rows.length}...` : `צור ${rows.length} חיבורים`}
       </button>
-      <a href="/chaburot/{mivtzaId}" class="px-4 py-2.5 rounded-lg border text-sm"
+      <a href={href(`/chaburot/${mivtzaId}`)} class="px-4 py-2.5 rounded-lg border text-sm"
         style="border-color: var(--color-border-primary); color: var(--color-text-secondary); background: transparent;"
         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}
         onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}>

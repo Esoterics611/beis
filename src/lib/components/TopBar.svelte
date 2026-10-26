@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href, routePath } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
 
@@ -16,7 +17,7 @@
     '/settings':    'הגדרות',
   };
 
-  let currentPath = $derived($page.url.pathname);
+  let currentPath = $derived(routePath($page.url));
   let title = $derived(routeTitles[currentPath] ?? 'Beis');
 
   let breadcrumbs = $derived(() => {
@@ -39,7 +40,7 @@
       <nav aria-label="פירורי לחם" class="flex items-center gap-1">
         {#each breadcrumbs() as crumb}
           <a
-            href={crumb.href}
+            href={href(crumb.href)}
             class="text-xs transition-colors duration-150"
             style="color: var(--color-text-secondary); text-decoration: none;"
             onmouseenter={(e) => (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'}

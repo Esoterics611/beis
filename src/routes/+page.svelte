@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDate, statusColor, trackColor, mivtzaCategoryLabel, formatMivtzaType } from '$lib/utils/format';
   import ProgressBar from '$components/ProgressBar.svelte';
@@ -120,7 +121,7 @@
   ">
     <div class="flex items-center justify-between mb-4">
       <h3 class="text-sm font-medium" style="color: var(--color-text-primary);">רשת לימוד תורני</h3>
-      <a href="/anash" class="text-xs hover:underline" style="color: var(--color-accent-primary);">כל החברים ←</a>
+      <a href={href(`/anash`)} class="text-xs hover:underline" style="color: var(--color-accent-primary);">כל החברים ←</a>
     </div>
     <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
       <div class="text-center">
@@ -167,7 +168,7 @@
   ">
     <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color: var(--color-border-primary);">
       <h3 class="text-sm font-medium" style="color: var(--color-text-primary);">חבורות פעילות</h3>
-      <a href="/chaburot" class="text-xs hover:underline transition-colors" style="color: var(--color-accent-secondary);">כל החבורות ←</a>
+      <a href={href(`/chaburot`)} class="text-xs hover:underline transition-colors" style="color: var(--color-accent-secondary);">כל החבורות ←</a>
     </div>
     <div class="divide-y" style="--tw-divide-color: var(--color-border-primary);">
       {#each app.mivtzaot.filter(m => m.status !== 'archived' && m.status !== 'draft') as mivtza}
@@ -175,7 +176,7 @@
         {@const creator = app.getTalmid(mivtza.creatorId)}
         {@const progress = app.getMivtzaProgress(mivtza.id)}
         <a
-          href="/chaburot/{mivtza.id}"
+          href={href(`/chaburot/${mivtza.id}`)}
           class="block px-5 py-4 transition-colors"
           onmouseenter={() => mivtzaHovers.set(mivtza.id, true)}
           onmouseleave={() => mivtzaHovers.delete(mivtza.id)}
@@ -232,7 +233,7 @@
             style="background-color: rgba(180,83,9,0.12); color: #b45309; border-radius: var(--radius-sm);"
           >{app.myUnvotedProposals.length}</span>
         </div>
-        <a href="/governance" style="color: var(--color-text-link); text-decoration: none; font-size: 0.75rem;">לכל ההצעות ←</a>
+        <a href={href(`/governance`)} style="color: var(--color-text-link); text-decoration: none; font-size: 0.75rem;">לכל ההצעות ←</a>
       </div>
       <div class="p-4 space-y-3">
         {#each app.myUnvotedProposals.slice(0, 2) as proposal}
@@ -249,11 +250,11 @@
   ">
     <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color: var(--color-border-primary);">
       <h3 class="text-sm font-medium" style="color: var(--color-text-primary);">בבית המדרש עכשיו</h3>
-      <a href="/anash" class="text-xs hover:underline transition-colors" style="color: var(--color-accent-secondary);">כל החברים ←</a>
+      <a href={href(`/anash`)} class="text-xs hover:underline transition-colors" style="color: var(--color-accent-secondary);">כל החברים ←</a>
     </div>
     <div class="px-5 py-4 flex flex-wrap gap-3">
       {#each app.talmidim.filter(t => t.isOnline) as talmid}
-        <a href="/anash/{talmid.id}" class="flex items-center gap-2 px-3 py-2 rounded-lg border hover:transition-all group" style="
+        <a href={href(`/anash/${talmid.id}`)} class="flex items-center gap-2 px-3 py-2 rounded-lg border hover:transition-all group" style="
           background-color: var(--color-bg-tertiary);
           border-color: var(--color-border-primary);
         " onmouseenter={(e) => {
@@ -325,13 +326,13 @@
     ">
       <div class="flex items-center justify-between px-5 py-3 border-b" style="border-color: var(--color-border-primary);">
         <h3 class="text-sm font-medium" style="color: var(--color-text-primary);">השלבים שלי</h3>
-        <a href="/seifim" class="text-xs hover:underline transition-colors" style="color: var(--color-accent-secondary);">הכל ←</a>
+        <a href={href(`/seifim`)} class="text-xs hover:underline transition-colors" style="color: var(--color-accent-secondary);">הכל ←</a>
       </div>
       <div class="divide-y" style="--tw-divide-color: var(--color-border-primary);">
         {#each activeTafkidim.slice(0, 5) as tafkid}
           {@const masima = app.getMasima(tafkid.chibburId)}
           <a
-            href="/chibburim/{tafkid.chibburId}"
+            href={href(`/chibburim/${tafkid.chibburId}`)}
             class="flex items-center gap-3 px-5 py-3.5 group transition-colors"
             onmouseenter={() => tafkidHovers.set(tafkid.id, 'true')}
             onmouseleave={() => tafkidHovers.delete(tafkid.id)}

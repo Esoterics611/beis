@@ -1,6 +1,6 @@
 <script lang="ts">
+  import { go } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
-  import { goto } from '$app/navigation';
   import RankInsignia from '$components/RankInsignia.svelte';
   import type { LearningTrack } from '$lib/types';
 
@@ -43,7 +43,7 @@
       shem = defaultShem;
       step = 'profile';
     } else {
-      goto('/');
+      go('/');
     }
   }
 
@@ -79,7 +79,7 @@
     submitting = true;
     const makomId = app.mekomot[0]?.id ?? '';
     await app.signUp(shem.trim() || 'חבר', walletAddress, makomId, track);
-    goto('/');
+    go('/');
   }
 </script>
 

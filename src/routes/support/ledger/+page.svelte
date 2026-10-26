@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { app } from '$stores/app.svelte';
+  import { href } from '$lib/utils/nav';
   type Row = {
     id: string;
     displayName: string;
@@ -16,8 +18,7 @@
   let totalTmim   = $derived(rows.reduce((s, r) => s + r.tmimMinted, 0));
 
   $effect(() => {
-    fetch('/api/support/donations')
-      .then(r => r.json())
+    app.publicDonations()
       .then((data: Row[]) => { rows = data; loading = false; })
       .catch(() => { loading = false; });
   });
@@ -29,7 +30,7 @@
 <div class="page-container">
   <!-- Header -->
   <div class="mb-6">
-    <a href="/support" class="text-sm" style="color: var(--color-accent-primary);">← חזרה לדף התמיכה</a>
+    <a href={href(`/support`)} class="text-sm" style="color: var(--color-accent-primary);">← חזרה לדף התמיכה</a>
     <h1 class="text-2xl font-bold mt-2" style="color: var(--color-text-primary); font-family: var(--font-hebrew);">
       ספר התורמים
     </h1>

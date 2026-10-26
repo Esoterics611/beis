@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { href } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
   import { PROPOSAL_TYPE_LABELS } from '$lib/types';
@@ -54,7 +55,7 @@
 
 <div class="page-container">
   <a
-    href="/governance"
+    href={href(`/governance`)}
     class="inline-flex items-center gap-1 text-xs mb-6 transition-colors duration-150"
     style="color: var(--color-text-link); text-decoration: none;"
   >← חזור לממשל</a>

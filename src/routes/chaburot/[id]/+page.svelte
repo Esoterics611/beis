@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { go, href } from '$lib/utils/nav';
   import { page } from '$app/stores';
   import { app } from '$stores/app.svelte';
   import { formatTmim, formatDeadline, mivtzaCategoryLabel, formatMivtzaType, formatPublicationFormat, formatPublicationLicense } from '$lib/utils/format';
@@ -56,7 +57,7 @@
 <div class="page-container space-y-6">
   <!-- ניווט -->
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-tertiary);">
-    <a href="/chaburot" style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
+    <a href={href(`/chaburot`)} style="color: var(--color-text-tertiary); text-decoration: none;" onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-accent-secondary)'; }} onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-tertiary)'; }}>חבורות</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">{mivtza.shem}</span>
   </div>
@@ -184,13 +185,13 @@
       <div class="flex items-center justify-end gap-2">
         {#if hasPublication}
           <a
-            href="/chaburot/{mivtza.id}/wizard"
+            href={href(`/chaburot/${mivtza.id}/wizard`)}
             class="px-3 py-1.5 text-xs font-medium transition-colors duration-150"
             style="background-color: var(--color-accent-secondary-light); border: 1px solid var(--color-accent-secondary); border-radius: var(--radius-md); color: var(--color-accent-secondary); text-decoration: none;"
           >אשף יצירת חיבורים</a>
         {/if}
         <a
-          href="/chibburim/new?mivtzaId={mivtza.id}"
+          href={href(`/chibburim/new?mivtzaId=${mivtza.id}`)}
           class="px-3 py-1.5 text-xs font-medium transition-colors duration-150"
           style="background-color: rgba(125,108,63,0.1); border: 1px solid rgba(125,108,63,0.3); border-radius: var(--radius-md); color: var(--color-accent-secondary); text-decoration: none;"
         >+ חיבור חדש</a>
@@ -198,7 +199,7 @@
     {:else if !enrolled.find(t => t?.id === app.currentUserId)}
       <div class="flex justify-end">
         <a
-          href="/chaburot/{mivtza.id}/apply"
+          href={href(`/chaburot/${mivtza.id}/apply`)}
           class="px-3 py-1.5 text-xs font-medium transition-colors duration-150"
           style="background-color: var(--color-accent-secondary-light); border: 1px solid var(--color-accent-secondary); border-radius: var(--radius-md); color: var(--color-accent-secondary); text-decoration: none;"
         >הגש מועמדות לתרום</a>
@@ -216,7 +217,7 @@
         {@const assignee = m.assigneeId ? app.getTalmid(m.assigneeId) : null}
         {@const reviewCount = app.getMasimaPeerReviews(m.id).length}
         <a
-          href="/chibburim/{m.id}"
+          href={href(`/chibburim/${m.id}`)}
           class="flex items-center gap-4 px-6 py-4 transition-colors duration-150"
           style="border-bottom: 1px solid var(--color-border-secondary); text-decoration: none; color: inherit;"
           onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}
@@ -288,7 +289,7 @@
       {#each enrolled as t}
         {#if t}
           <a
-            href="/anash/{t.id}"
+            href={href(`/anash/${t.id}`)}
             class="p-4 flex flex-col items-center gap-2 text-center transition-colors duration-150"
             style="
               border: 1px solid var(--color-border-primary);
@@ -395,7 +396,7 @@
 
       <!-- קישור תמיכה -->
       <a
-        href="/support?intent=mivtza_{mivtza.id}&title={encodeURIComponent(pub.titleHebrew)}"
+        href={href(`/support?intent=mivtza_${mivtza.id}&title=${encodeURIComponent(pub.titleHebrew)}`)}
         class="flex items-center justify-center gap-2 py-3 rounded-xl border font-medium text-sm transition-colors btn-primary"
         style="border-radius: var(--radius-xl);">
         ❤ תמוך בפרסום זה
@@ -445,7 +446,7 @@
   message="האם למחוק את '{mivtza?.shem ?? ''}'? כל החיבורים, השלבים והביקורות יימחקו. פעולה זו אינה הפיכה."
   confirmLabel="מחק"
   destructive={true}
-  onconfirm={() => { if (mivtza) { app.deleteMivtza(mivtza.id); window.location.href = '/chaburot'; } }}
+  onconfirm={() => { if (mivtza) { app.deleteMivtza(mivtza.id); go('/chaburot'); } }}
   oncancel={() => showDeleteConfirm = false}
 />
 

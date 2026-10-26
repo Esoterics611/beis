@@ -1,8 +1,8 @@
 <script lang="ts">
+  import { go, href } from '$lib/utils/nav';
   import { app } from '$stores/app.svelte';
   import type { MivtzaType, MivtzaCategory, PublicationFormat, PublicationLicense } from '$lib/types';
   import { formatPublicationFormat, formatPublicationLicense } from '$lib/utils/format';
-  import { goto } from '$app/navigation';
 
   const typeOptions: { value: MivtzaType; label: string; desc: string }[] = [
     { value: 'course',       label: 'קורס',    desc: 'שיעורים ועבודות מסודרות' },
@@ -85,7 +85,7 @@
           },
         }),
       });
-      goto(`/chaburot/${mivtza.id}`);
+      go(`/chaburot/${mivtza.id}`);
     } finally {
       submitting = false;
     }
@@ -107,12 +107,12 @@
 {#if !app.isMashpia}
   <div class="rounded-xl border p-6 text-center" style="border-color: rgba(239,68,68,0.3); background-color: rgba(239,68,68,0.1);">
     <p class="font-medium text-red-400">נדרשת הרשאה לפתיחת חבורה</p>
-    <a href="/chaburot" class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
+    <a href={href(`/chaburot`)} class="text-xs mt-2 block hover:underline" style="color: var(--color-accent-secondary);">חזור ←</a>
   </div>
 {:else}
 <div class="space-y-6 max-w-2xl">
   <div class="flex items-center gap-2 text-xs" style="color: var(--color-text-secondary);">
-    <a href="/chaburot" class="hover:underline" style="color: var(--color-accent-secondary);">חבורות</a>
+    <a href={href(`/chaburot`)} class="hover:underline" style="color: var(--color-accent-secondary);">חבורות</a>
     <span>/</span>
     <span style="color: var(--color-text-primary);">חבורה חדשה</span>
   </div>
@@ -336,7 +336,7 @@
         class="flex-1 py-2.5 rounded-lg font-medium text-sm btn-primary disabled:opacity-50">
         {submitting ? 'יוצר...' : 'צור חבורה'}
       </button>
-      <a href="/chaburot" class="px-4 py-2.5 rounded-lg border text-sm" style="border-color: var(--color-border-primary); color: var(--color-text-secondary); background: transparent;"
+      <a href={href(`/chaburot`)} class="px-4 py-2.5 rounded-lg border text-sm" style="border-color: var(--color-border-primary); color: var(--color-text-secondary); background: transparent;"
         onmouseenter={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-primary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'var(--color-bg-tertiary)'; }}
         onmouseleave={(e) => { (e.currentTarget as HTMLElement).style.color = 'var(--color-text-secondary)'; (e.currentTarget as HTMLElement).style.backgroundColor = 'transparent'; }}>
         ביטול

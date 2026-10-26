@@ -24,6 +24,7 @@ import {
   MOCK_MAAMARIM,
   MOCK_FARBRENGENS,
   MOCK_SEDER,
+  MOCK_PROPOSALS,
   CURRENT_USER_ID,
 } from './mock-data';
 import type {
@@ -55,6 +56,18 @@ import { toast } from './toast.svelte';
 import type { Eip1193Provider } from 'ethers';
 
 // Detect if Firebase is configured
+/** A row of the public donations ledger, as /api/support/donations returns it. */
+export interface PublicDonation {
+  id: string;
+  displayName: string;
+  amount: number;
+  currency: string;
+  intent: string | null;
+  tmimMinted: number;
+  txHash: string | null;
+  createdAt: string;
+}
+
 const USE_FIREBASE = typeof import.meta !== 'undefined' &&
   !!import.meta.env?.VITE_FIREBASE_API_KEY;
 
@@ -163,6 +176,7 @@ class AppStore {
       this.treasury    = MOCK_TREASURY;
       this.activities  = MOCK_ACTIVITIES;
       this.mekomot     = MOCK_MEKOMOT;
+      this.proposals   = MOCK_PROPOSALS;
       this.currentUserId = CURRENT_USER_ID;
       this.loading = false;
       return;
@@ -820,6 +834,11 @@ class AppStore {
   // ══════════════════════════════════════════════════════════════
 
   async addMivtzaApplication(mivtzaId: string, statement: string): Promise<{ id: string; status: string }> {
+    if (!USE_FIREBASE) {
+      // In-memory: nothing to send; the mashpia's approval isn't simulated.
+      toast.success('הבקשה נשלחה — ממתין לאישור המשפיע');
+      return { id: this.nextId('application'), status: 'pending' };
+    }
     const res = await this.authFetch(`/api/chaburot/${mivtzaId}/applications`, {
       method: 'POST',
       body: JSON.stringify({ statement }),
@@ -897,6 +916,26 @@ class AppStore {
   // ══════════════════════════════════════════════════════════════
   // Treasury
   // ══════════════════════════════════════════════════════════════
+
+  /** The public donations ledger (/support, /support/ledger): from the server,
+   *  or from the sample donations when there is no backend. */
+  async publicDonations(): Promise<PublicDonation[]> {
+    if (USE_FIREBASE) {
+      const res = await fetch('/api/support/donations');
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    }
+    return this.donations.map(d => ({
+      id: d.id,
+      displayName: d.donorName,
+      amount: d.amount,
+      currency: 'usdc',
+      intent: d.chaburahId ? `mivtza_${d.chaburahId}` : null,
+      tmimMinted: d.tmimMinted,
+      txHash: null,
+      createdAt: d.createdAt,
+    }));
+  }
 
   async addDonation(data: Omit<Donation, 'id' | 'createdAt'>): Promise<void> {
     if (USE_FIREBASE) {
